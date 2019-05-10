@@ -1,0 +1,7 @@
+__pycache__*
+mqtt*
+engines/model_*
+build/*
+dist/*
+linto_spotter.egg-info
+.vscode/

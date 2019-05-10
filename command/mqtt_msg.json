@@ -1,0 +1,34 @@
+{
+    "output": {
+        "ready" : {
+            "topic": "hotword/ready",
+            "message" : {"value" : "ready"}
+        },
+        "wakeword_spotted" : {
+            "topic": "wuw_spotted",
+            "message" : {"value" : "wuw_spotted"}
+        },
+        "utterance_start" : {
+            "topic": "utterance/start",
+            "message" : ""
+        },
+        "utterance_stop": {
+            "topic": "utterance/stop"
+        },
+        "utterance_th" : {
+            "message" :{"reason": "thresholdReached"}
+        },
+        "utterance_timeout" : {
+            "message" :{"reason": "timeout"}
+        },
+        "utterance_canceled" : {
+            "message" :{"reason": "canceled"}
+        }
+    },
+    "input": {
+        "suspend_topic" : "ui/mute_on",
+        "resume_topic" : "ui/mute_off",
+        "cancel_topic" : "ui/cancel",
+        "start_utterance" : "ui/detectutt"
+    }
+}
