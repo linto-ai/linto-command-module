@@ -32,9 +32,9 @@ cd linto-command-module
 
 2. Install dependencies (w/ or w/out using virtualenv)
 ```bash
-MY_VENV_FODLER=path/to/your/venv
-virtualenv -p /usr/bin/python3.X --no-site-package $MY_VENV_FODLER
-source $MY_VENV_FODLER/bin/activate
+MY_VENV_FOLDER=path/to/your/venv
+virtualenv -p /usr/bin/python3.X --no-site-package $MY_VENV_FOLDER
+source $MY_VENV_FOLDER/bin/activate
 pip install -r requirements.txt
 ```
 __________________
