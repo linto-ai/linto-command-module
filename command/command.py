@@ -118,9 +118,12 @@ class Command:
         logging.debug("Utterance end with status {} ({}B)".format(status, len(data) if data is not None else str(0)))
         messages = [self.mqtt_config['output'][reason]['message'] for reason in ["utterance_th", "utterance_timeout", "utterance_canceled"]]
         msg = dict(zip([1,-1,0], messages))[status.value]
+        if status == rts.vad.vad.Utt_Status.THREACHED:
+            with open(self.config['TMP_FILE'], 'wb') as f:
+                f.write(data)
         self._client.publish(self.mqtt_config['output']['utterance_stop']['topic'], json.dumps(msg))
         self._kws.resume()
-
+    
     @tenacity.retry(wait=tenacity.wait_random(min=1, max=10),
                 retry=tenacity.retry_if_result(lambda s: s is False))
     def _connect(self, host: str, port: int) -> bool:
