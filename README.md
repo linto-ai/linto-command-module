@@ -1,7 +1,7 @@
 # LinTO-command-module
 LinTO Command Module purpose is to:
-* Spotting keyword
-* Detecting beginning and ending of voice command utterances.
+* Spot wake-up-word
+* Detect beginning and end of voice command utterances.
 
 ## Introduction
 linto-command module is a software brick for the LinTO Maker prototype. It is designed originaly to run on raspeberry pi 3 within LinTO-OS.
