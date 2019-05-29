@@ -93,10 +93,16 @@ class Command:
             self.mqtt_config = json.load(f)
 
             # Map input topics with functions
-            self._action_map[self.mqtt_config['input']['suspend_topic']] = self.suspend
-            self._action_map[self.mqtt_config['input']['resume_topic']] = self.resume
-            self._action_map[self.mqtt_config['input']['cancel_topic']] = self.cancel_utterance
-            self._action_map[self.mqtt_config['input']['start_utterance']] = self.detect_utterance
+            self._action_map[self.mqtt_config['input']['suspend_topic']['topic']] = dict()
+            self._action_map[self.mqtt_config['input']['resume_topic']['topic']] = dict()
+            self._action_map[self.mqtt_config['input']['cancel_topic']['topic']] = dict()
+            self._action_map[self.mqtt_config['input']['start_utterance']['topic']] = dict()
+            
+            self._action_map[self.mqtt_config['input']['suspend_topic']['topic']][self.mqtt_config['input']['suspend_topic']["value"]] = self.suspend
+            self._action_map[self.mqtt_config['input']['resume_topic']['topic']][self.mqtt_config['input']['resume_topic']["value"]] = self.resume
+            self._action_map[self.mqtt_config['input']['cancel_topic']['topic']][self.mqtt_config['input']['cancel_topic']["value"]] = self.cancel_utterance
+            self._action_map[self.mqtt_config['input']['start_utterance']['topic']][self.mqtt_config['input']['start_utterance']["value"]] = self.detect_utterance
+            print(self._action_map)
     
     def _on_hotword(self, index: int, value: float):
         logging.debug("Hotword spotted {}:{}".format(index, value))
@@ -135,9 +141,12 @@ class Command:
 
     def _on_broker_connect(self, client, userdata, flags, rc):
         logging.info("Successfuly connected to broker at {}:{}".format(self.config['MQTT_LOCAL_HOST'], self.config['MQTT_LOCAL_PORT']))
+        topics = []
         for key in self.mqtt_config['input'].keys():
-            self._client.subscribe(self.mqtt_config['input'][key])
-            logging.debug("Subscribed to {}".format(self.mqtt_config['input'][key]))
+            topics.append(self.mqtt_config['input'][key]['topic'])
+        for topic in set(topics):
+            self._client.subscribe(topic)
+            logging.debug("Subscribed to {}".format(topic))
     
     def _on_broker_disconnect(self):
         logging.warning("MQTT Client has been disconnected")
@@ -148,21 +157,35 @@ class Command:
         msg = str(message.payload.decode("utf-8"))
         topic = message.topic
         logging.debug("Incoming message ({}): {}".format(topic, msg))
-        self._process_input(topic)
+        payload = message.payload.decode("utf-8")
+        try:
+            content = json.loads(payload)
+        except:
+            logging.warning("Could not parse input message")
+            value = 'any'
+        else:
+            value = content['value'] if 'value' in content.keys() else 'any' 
+        
+        self._process_input(topic, value)
 
     def _on_error(self, err):
         logging.error("Catched Error: {}".format(err))
 
-    def _process_input(self, topic):
+    def _process_input(self, topic, value):
         if topic in self._action_map.keys():
-            self._action_map[topic]()
+            if value in self._action_map[topic].keys():
+                self._action_map[topic][value]()
+            else:
+                logging.warning("No action provided for value {} on topic {}".format(value, topic))
 
     def suspend(self):
+        self._vad.cancel_utterance()
         self.pipeline.stop()
         logging.debug("Process is suspended")
 
     def resume(self):
         self.pipeline.resume()
+        self._kws.clear_buffer()
         logging.debug("Process is resumed")
 
     def start(self):

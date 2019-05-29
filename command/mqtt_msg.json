@@ -26,9 +26,21 @@
         }
     },
     "input": {
-        "suspend_topic" : "ui/mute_on",
-        "resume_topic" : "ui/mute_off",
-        "cancel_topic" : "ui/cancel",
-        "start_utterance" : "ui/detectutt"
+        "suspend_topic" : {
+            "topic": "wuw_spotter/status",
+            "value": "False"
+        },
+        "resume_topic" : {
+            "topic": "wuw_spotter/status",
+            "value": "True"
+        },
+        "cancel_topic" : {
+            "topic": "ui/cancel",
+            "value": "any"
+        },
+        "start_utterance" : {
+            "topic": "wuw_spotter/status",
+            "value": "detect_utterance"
+        }
     }
 }
