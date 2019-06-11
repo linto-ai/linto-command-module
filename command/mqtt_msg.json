@@ -10,7 +10,7 @@
         },
         "utterance_start" : {
             "topic": "utterance/start",
-            "message" : ""
+            "message" : {"value": "start_voice_detection"}
         },
         "utterance_stop": {
             "topic": "utterance/stop"
@@ -26,15 +26,23 @@
         }
     },
     "input": {
-        "suspend_topic" : {
-            "topic": "wuw_spotter/status",
+        "suspend" : {
+            "topic": "ui/mute_on", 
+            "value": "any"
+        },
+        "suspend_kws" : {
+            "topic": "wuw_spotter/status", 
             "value": "False"
         },
-        "resume_topic" : {
-            "topic": "wuw_spotter/status",
+        "resume" : {
+            "topic": "ui/mute_off", 
+            "value": "any"
+        },
+        "resume_kws" : {
+            "topic": "wuw_spotter/status", 
             "value": "True"
         },
-        "cancel_topic" : {
+        "cancel" : {
             "topic": "ui/cancel",
             "value": "any"
         },

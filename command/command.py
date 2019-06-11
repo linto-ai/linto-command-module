@@ -43,10 +43,10 @@ class Command:
         features_params = rts.features.MFCCParams(**model_param['features'])
 
         listenner = rts.listenner.Listenner(audio_params)
-        self._vad = rts.vad.VADer()
+        self._vad = rts.vad.VADer(tail=3)
         btn = rts.transform.ByteToNum(normalize=True)
         mfcc = rts.features.SonopyMFCC(features_params)
-        self._kws = rts.kws.KWS(model_path, model_param['input_shape'], threshold=float(self.config['KWS_TH']))
+        self._kws = rts.kws.KWS(model_path, model_param['input_shape'], threshold=float(self.config['KWS_TH']), n_act_recquire=int(self.config['KWS_NACT']))
         elements = [listenner, self._vad, btn, mfcc, self._kws]
         self.pipeline = rts.Pipeline(elements)
 
@@ -93,26 +93,29 @@ class Command:
             self.mqtt_config = json.load(f)
 
             # Map input topics with functions
-            self._action_map[self.mqtt_config['input']['suspend_topic']['topic']] = dict()
-            self._action_map[self.mqtt_config['input']['resume_topic']['topic']] = dict()
-            self._action_map[self.mqtt_config['input']['cancel_topic']['topic']] = dict()
+            self._action_map[self.mqtt_config['input']['suspend']['topic']] = dict()
+            self._action_map[self.mqtt_config['input']['suspend_kws']['topic']] = dict()
+            self._action_map[self.mqtt_config['input']['resume']['topic']] = dict()
+            self._action_map[self.mqtt_config['input']['resume_kws']['topic']] = dict()
+            self._action_map[self.mqtt_config['input']['cancel']['topic']] = dict()
             self._action_map[self.mqtt_config['input']['start_utterance']['topic']] = dict()
             
-            self._action_map[self.mqtt_config['input']['suspend_topic']['topic']][self.mqtt_config['input']['suspend_topic']["value"]] = self.suspend
-            self._action_map[self.mqtt_config['input']['resume_topic']['topic']][self.mqtt_config['input']['resume_topic']["value"]] = self.resume
-            self._action_map[self.mqtt_config['input']['cancel_topic']['topic']][self.mqtt_config['input']['cancel_topic']["value"]] = self.cancel_utterance
-            self._action_map[self.mqtt_config['input']['start_utterance']['topic']][self.mqtt_config['input']['start_utterance']["value"]] = self.detect_utterance
-            print(self._action_map)
+            self._action_map[self.mqtt_config['input']['suspend']['topic']][self.mqtt_config['input']['suspend']['value']] = self.suspend
+            self._action_map[self.mqtt_config['input']['suspend_kws']['topic']][self.mqtt_config['input']['suspend_kws']['value']] = self.suspend_kws
+            self._action_map[self.mqtt_config['input']['resume']['topic']][self.mqtt_config['input']['resume']['value']] = self.resume
+            self._action_map[self.mqtt_config['input']['resume_kws']['topic']][self.mqtt_config['input']['resume_kws']['value']] = self.resume_kws
+            self._action_map[self.mqtt_config['input']['cancel']['topic']][self.mqtt_config['input']['cancel']['value']] = self.cancel_utterance
+            self._action_map[self.mqtt_config['input']['start_utterance']['topic']][self.mqtt_config['input']['start_utterance']['value']] = self.detect_utterance
     
     def _on_hotword(self, index: int, value: float):
         logging.debug("Hotword spotted {}:{}".format(index, value))
         logging.debug("Utterance start")
-        self._client.publish(self.mqtt_config['output']['utterance_start']['topic'],
-                             json.dumps(self.mqtt_config['output']['utterance_start']['message']))
         self.detect_utterance()
 
     def detect_utterance(self):
         self._kws.stop()
+        self._client.publish(self.mqtt_config['output']['utterance_start']['topic'],
+                             json.dumps(self.mqtt_config['output']['utterance_start']['message']))
         logging.debug("Start utterance detection")
         self._vad.detect_utterance(callback=self._on_utterance_end)
     
@@ -128,7 +131,7 @@ class Command:
             with open(self.config['TMP_FILE'], 'wb') as f:
                 f.write(data)
         self._client.publish(self.mqtt_config['output']['utterance_stop']['topic'], json.dumps(msg))
-        self._kws.resume()
+        self.resume_kws()
     
     @tenacity.retry(wait=tenacity.wait_random(min=1, max=10),
                 retry=tenacity.retry_if_result(lambda s: s is False))
@@ -179,14 +182,23 @@ class Command:
                 logging.warning("No action provided for value {} on topic {}".format(value, topic))
 
     def suspend(self):
-        self._vad.cancel_utterance()
+        self.cancel_utterance()
         self.pipeline.stop()
         logging.debug("Process is suspended")
+
+    def suspend_kws(self):
+        self._kws.stop()
+        logging.debug("KWS is suspended")
 
     def resume(self):
         self.pipeline.resume()
         self._kws.clear_buffer()
         logging.debug("Process is resumed")
+
+    def resume_kws(self):
+        self._kws.clear_buffer()
+        self._kws.resume()
+        logging.debug("KWS is resumed")
 
     def start(self):
         try:
