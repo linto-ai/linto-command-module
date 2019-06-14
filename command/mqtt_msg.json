@@ -49,6 +49,10 @@
         "start_utterance" : {
             "topic": "wuw_spotter/status",
             "value": "detect_utterance"
+        },
+        "dummy_detect" : {
+            "topic": "dummy_detect",
+            "value": "any"
         }
     }
 }

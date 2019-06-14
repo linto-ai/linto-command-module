@@ -99,6 +99,7 @@ class Command:
             self._action_map[self.mqtt_config['input']['resume_kws']['topic']] = dict()
             self._action_map[self.mqtt_config['input']['cancel']['topic']] = dict()
             self._action_map[self.mqtt_config['input']['start_utterance']['topic']] = dict()
+            self._action_map[self.mqtt_config['input']['dummy_detect']['topic']] = dict()
             
             self._action_map[self.mqtt_config['input']['suspend']['topic']][self.mqtt_config['input']['suspend']['value']] = self.suspend
             self._action_map[self.mqtt_config['input']['suspend_kws']['topic']][self.mqtt_config['input']['suspend_kws']['value']] = self.suspend_kws
@@ -106,11 +107,15 @@ class Command:
             self._action_map[self.mqtt_config['input']['resume_kws']['topic']][self.mqtt_config['input']['resume_kws']['value']] = self.resume_kws
             self._action_map[self.mqtt_config['input']['cancel']['topic']][self.mqtt_config['input']['cancel']['value']] = self.cancel_utterance
             self._action_map[self.mqtt_config['input']['start_utterance']['topic']][self.mqtt_config['input']['start_utterance']['value']] = self.detect_utterance
-    
+            self._action_map[self.mqtt_config['input']['dummy_detect']['topic']][self.mqtt_config['input']['dummy_detect']['value']] = self.dummy_detect
+
     def _on_hotword(self, index: int, value: float):
         logging.debug("Hotword spotted {}:{}".format(index, value))
         logging.debug("Utterance start")
         self.detect_utterance()
+
+    def dummy_detect(self):
+        self._on_hotword(0, 1.0)
 
     def detect_utterance(self):
         self._kws.stop()
