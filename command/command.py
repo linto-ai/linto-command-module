@@ -43,7 +43,7 @@ class Command:
         features_params = rts.features.MFCCParams(**model_param['features'])
 
         listenner = rts.listenner.Listenner(audio_params)
-        self._vad = rts.vad.VADer(tail=3)
+        self._vad = rts.vad.VADer(tail=int(self.config['TAIL']), head=int(self.config['HEAD']))
         btn = rts.transform.ByteToNum(normalize=True)
         mfcc = rts.features.SonopyMFCC(features_params)
         self._kws = rts.kws.KWS(model_path, model_param['input_shape'], threshold=float(self.config['KWS_TH']), n_act_recquire=int(self.config['KWS_NACT']))
