@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+__version__ = "1.0.0"
+
 import os
 import sys
 import json
@@ -21,6 +23,7 @@ class Command:
     Configuration is done using a .json file. 
     """ 
     def __init__(self):
+        logging.info("Running command module version {}".format(__version__))
         self._running = False
         self.config = dict() # Hold general parameters
         self.mqtt_config = dict() # Hold mqtt topics and messages
@@ -122,7 +125,7 @@ class Command:
         self._client.publish(self.mqtt_config['output']['utterance_start']['topic'],
                              json.dumps(self.mqtt_config['output']['utterance_start']['message']))
         logging.debug("Start utterance detection")
-        self._vad.detect_utterance(callback=self._on_utterance_end)
+        self._vad.detect_utterance(sil_th=int(self.config['SIL_TH']), speech_th=int(self.config['SPEECH_TH']), callback=self._on_utterance_end)
     
     def cancel_utterance(self):
         logging.debug("Cancel utterance detection")
