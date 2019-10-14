@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 import os
 import sys
@@ -48,9 +48,16 @@ class Command:
         listenner = rts.listenner.Listenner(audio_params)
         self._vad = rts.vad.VADer(tail=int(self.config['TAIL']), head=int(self.config['HEAD']))
         btn = rts.transform.ByteToNum(normalize=True)
+        if 'emphasis' in model_param and model_param['emphasis'] is not None:
+            emp = rts.transform.PreEmphasis(emphasis_factor = model_param['emphasis'])
+        else: 
+            emp = None
         mfcc = rts.features.SonopyMFCC(features_params)
         self._kws = rts.kws.KWS(model_path, model_param['input_shape'], threshold=float(self.config['KWS_TH']), n_act_recquire=int(self.config['KWS_NACT']))
-        elements = [listenner, self._vad, btn, mfcc, self._kws]
+        elements = [listenner, self._vad, btn]
+        if emp is not None:
+            elements.append(emp)
+        elements.extend([mfcc, self._kws])
         self.pipeline = rts.Pipeline(elements)
 
         # Linking the handlers
