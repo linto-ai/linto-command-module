@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 import os
 import sys
@@ -42,14 +42,15 @@ class Command:
             model_param = json.load(f)
 
         # Building the pipeline
-        audio_params = rts.listenner.AudioParams(**model_param['features'])
-        features_params = rts.features.MFCCParams(**model_param['features'])
+        audio_params = rts.listenner.AudioParams(**model_param['audio'])
+        features_params = rts.features.MFCCParams(**model_param['audio'], **model_param['features'])
 
         listenner = rts.listenner.Listenner(audio_params)
         self._vad = rts.vad.VADer(tail=int(self.config['TAIL']), head=int(self.config['HEAD']))
         btn = rts.transform.ByteToNum(normalize=True)
-        if 'emphasis' in model_param and model_param['emphasis'] is not None:
-            emp = rts.transform.PreEmphasis(emphasis_factor = model_param['emphasis'])
+        
+        if 'emphasis' in model_param['audio'] and model_param['audio']['emphasis'] is not None:
+            emp = rts.transform.PreEmphasis(emphasis_factor = model_param['audio']['emphasis'])
         else: 
             emp = None
         mfcc = rts.features.SonopyMFCC(features_params)

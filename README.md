@@ -1,4 +1,7 @@
 # LinTO-command-module
+![version](https://raster.shields.io/badge/version-v1.0.2-brightgreen.png)
+![release](https://img.shields.io/github/v/release/linto-ai/linto-command-module.png)
+
 LinTO Command Module purpose is to:
 * Spot wake-up-word
 * Detect beginning and end of voice command utterances.
