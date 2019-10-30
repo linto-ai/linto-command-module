@@ -1,5 +1,5 @@
 # LinTO-command-module
-![version](https://img.shields.io/github/manifest-json/v/linto-ai/linto-command-module?style=for-the-badge)
+![version](https://img.shields.io/github/manifest-json/v/linto-ai/linto-command-module)
 ![release](https://img.shields.io/github/v/release/linto-ai/linto-command-module.png)
 
 LinTO Command Module purpose is to:
