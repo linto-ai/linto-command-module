@@ -4,11 +4,11 @@ block_cipher = None
 
 
 a = Analysis(['command/command.py'],
-             pathex=['/home/rbaraglia/repositories/linto/linto-command-module'],
+             pathex=['/hdd/repositories/linto/linto-command-module'],
              binaries=[],
              datas=[('command/.env_default', '.'), ('command/mqtt_msg.json', '.')],
              hiddenimports=[],
-             hookspath=[],
+             hookspath=['hooks/'],
              runtime_hooks=[],
              excludes=[],
              win_no_prefer_redirects=False,
