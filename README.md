@@ -16,8 +16,8 @@ The easiest way to use linto-command-module is to download the binary package.
 
 ### Binary package
 The module has been tested on x86-64 and armv7l, binary archives can be downloaded there:
-* x86_64: [Here](https://github.com/linto-ai/linto-command-module/releases/download/v0.1/linto-command-0.1-x64.tar.gz)
-* Armv7l: [Here](https://github.com/linto-ai/linto-command-module/releases/download/v0.1/linto-command-0.1-armv7l.tar.gz)
+* x86_64: [Here](https://github.com/linto-ai/linto-command-module/releases/download/v1.0.2/linto-command-1.0.2-x86_64.tar.gz)
+* Armv7l (buster): [Here](https://github.com/linto-ai/linto-command-module/releases/download/v1.0.2/linto-command-1.0.2-armv7l-buster.tar.gz)
 
 Extract the folder:
 ```bash
