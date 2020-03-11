@@ -32,7 +32,7 @@ class Command:
         self._load_config()
         
         # Find model and load param
-        folder_content = [f for f in os.listdir(self.config['MODEL_FOLDER']) if os.path.isfile(f) and f.split('.')[1] in ['net', 'pb', 'h5', 'hdf5', 'tflite']]
+        folder_content = [f for f in os.listdir(self.config['MODEL_FOLDER']) if os.path.isfile(os.path.join(self.config['MODEL_FOLDER'],f)) and f.split('.')[1] in ['net', 'pb', 'h5', 'hdf5', 'tflite']]
         folder_content = sorted(folder_content, key= lambda x: x.split('.')[1], reverse=True) # To set priority to tflite and pb over the others
         if len(folder_content) == 0:
             logging.error("Could not find model file in {}".format(self.config['MODEL_FOLDER']))
