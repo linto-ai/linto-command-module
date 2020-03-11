@@ -32,12 +32,16 @@ class Command:
         self._load_config()
         
         # Find model and load param
-        folder_content = [f for f in os.listdir(self.config['MODEL_FOLDER']) if f.endswith('.net') or f.endswith('.pb')]
+        folder_content = [f for f in os.listdir(self.config['MODEL_FOLDER']) if os.path.isfile(f) and f.split('.')[1] in ['net', 'pb', 'h5', 'hdf5', 'tflite']]
+        folder_content = sorted(folder_content, key= lambda x: x.split('.')[1], reverse=True) # To set priority to tflite and pb over the others
         if len(folder_content) == 0:
             logging.error("Could not find model file in {}".format(self.config['MODEL_FOLDER']))
+            exit(0)
         model_path = os.path.join(self.config['MODEL_FOLDER'],folder_content[0])
         param_path = os.path.splitext(model_path)[0] + ".param"
-
+        if not os.path.isfile(param_path):
+            logging.error("Could not find model parameter file at {}. Param file should be found alongside the model.".format(param_path))
+            exit(0)
         with open(param_path) as f:
             model_param = json.load(f)
 
@@ -46,7 +50,7 @@ class Command:
         features_params = rts.features.MFCCParams(**model_param['audio'], **model_param['features'])
 
         listenner = rts.listenner.Listenner(audio_params)
-        self._vad = rts.vad.VADer(tail=int(self.config['TAIL']), head=int(self.config['HEAD']))
+        self._vad = rts.vad.VADer(mode=int(self.config['MODE']), tail=int(self.config['TAIL']), head=int(self.config['HEAD']))
         btn = rts.transform.ByteToNum(normalize=True)
         
         if 'emphasis' in model_param['audio'] and model_param['audio']['emphasis'] is not None:
@@ -54,12 +58,14 @@ class Command:
         else: 
             emp = None
         mfcc = rts.features.SonopyMFCC(features_params)
-        self._kws = rts.kws.KWS(model_path, model_param['input_shape'], threshold=float(self.config['KWS_TH']), n_act_recquire=int(self.config['KWS_NACT']))
+        self._kws = rts.kws.KWS(model_path, threshold=float(self.config['KWS_TH']), n_act_recquire=int(self.config['KWS_NACT']))
+        logging.debug("Using model: {}".format(model_path))
         elements = [listenner, self._vad, btn]
         if emp is not None:
             elements.append(emp)
         elements.extend([mfcc, self._kws])
         self.pipeline = rts.Pipeline(elements)
+        logging.debug("Pipeline created :{}".format("->".join([element.__name__ for element in elements])))
 
         # Linking the handlers
         for element in elements:
@@ -189,6 +195,8 @@ class Command:
 
     def _on_error(self, err):
         logging.error("Catched Error: {}".format(err))
+        self.pipeline.close()
+        exit(0)
 
     def _process_input(self, topic, value):
         if topic in self._action_map.keys():

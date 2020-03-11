@@ -1,3 +1,3 @@
-pyrtstools>=0.2.8
+pyrtstools>=0.2.9
 tenacity>=4.12
 paho-mqtt>=1.3
